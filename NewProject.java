@@ -1,6 +1,3 @@
-package com.example.augustino.fxcontrol;
-
-import com.example.augustino.DS.Company;
 import com.example.augustino.DS.Course;
 import com.example.augustino.DS.Projects;
 import com.example.augustino.DS.Student;
@@ -22,15 +19,13 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class NewProject implements Initializable {
-    public TextArea descProjectF;
-    public TextArea VardasProjkektasF;
-    public TextField VardasProjkektasF;
-    public ComboBoxed respUserBox;
+    public TextArea descProjectField;
+    public TextField nameProjectField;
+    public ComboBox respUserBox;
 
     private int courseId;
     private int parentId;
@@ -42,27 +37,35 @@ public class NewProject implements Initializable {
     CourseHib courseHib = new CourseHib(entityManagerFactory);
     ProjectHib projectHib = new ProjectHib(entityManagerFactory);
 
-    public void Daritiprojekta(ActionEvent actionEvent) throws IOException{
-        if (parentId != 0){
+    //pagrindinis metodo veikimas
+
+    public void doProject(ActionEvent actionEvent) throws IOException {
+        if (parentId != 0) {
             Projects parent = projectHib.getProjectById(parentId);
-            Projects projects = new Projects(VardasProjkektasF.getText(), descProjectF.getText(), parent, (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ") [0])) ,userHib.getUserById(userId));
+            Projects projects = new Projects(nameProjectField.getText(), descProjectField.getText(), parent,
+                    (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ") [0])) ,
+                    userHib.getUserById(userId));
             parent.getSubProjects().add(projects);
             projectHib.editProject(parent);
-        } else if(courseId != 0){
+        } else if (courseId != 0) {
             Course course = courseHib.getCourseById(courseId);
-            Projects projects = new Projects(VardasProjkektasF.getText(), descProjectF.getText(), (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ")[0])) ,userHib.getUserById(userId), course);
+            Projects projects = new Projects(nameProjectField.getText(), descProjectField.getText(),
+                    (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ")[0])) ,
+                    userHib.getUserById(userId), course);
             course.getCourseProjects().add(projects);
             courseHib.editCourse(course);
-        }else{
+        } else {
             Projects projects = projectHib.getProjectById(projectId);
-            projects.setProjectName(VardasProjkektasF.getText());
-            projects.setProjectDesc(descProjectF.getText());
+            projects.setProjectName(nameProjectField.getText());
+            projects.setProjectDesc(descProjectField.getText());
             projectHib.editProject(projects);
         }
-        back();
+        loadScreen();
     }
 
-    public void back() throws IOException {
+    //užkrauna pasirinktą langą
+
+    public void loadScreen() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("MainCourse.fxml"));
         Parent root = fxmlLoader.load();
 
@@ -71,16 +74,14 @@ public class NewProject implements Initializable {
 
         Scene scene = new Scene(root);
 
-        Stage stage = (Stage) VardasProjkektasF.getScene().getWindow();
+        Stage stage = (Stage) nameProjectField.getScene().getWindow();
         stage.setScene(scene);
         stage.show();
     }
 
-    public void cancelProject(ActionEvent actionEvent) throws IOException {
-        back();
-    }
+    //sudeda naujo kurso duomenis
 
-    public void newData(boolean modif,int courseId, int parentId, int userId, int projectId) {
+    public void newCourseData(boolean modif,int courseId, int parentId, int userId, int projectId) {
         this.courseId = courseId;
         this.parentId = parentId;
         this.userId = userId;
@@ -90,15 +91,19 @@ public class NewProject implements Initializable {
         }
     }
 
-    private void loadNewProject(){
+    //užkrauna nauują projektą
+
+    private void loadNewProject() {
         Projects projects = projectHib.getProjectById(projectId);
-        VardasProjkektasF.setText(projects.getProjectName());
-        descProjectF.setText(projects.getProjectDesc());
+        nameProjectField.setText(projects.getProjectName());
+        descProjectField.setText(projects.getProjectDesc());
     }
 
+    //užkrauna studentų sąrašą
+
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        List<Student> users = userHib.getAllStudent();
-        users.forEach(temp -> respUserBox.getItems().add(temp.getId() + " | " + temp.getName()));
+    public void initializeUsers(URL url, ResourceBundle resourceBundle) {
+        List<Student> studentUsers = userHib.getAllStudent();
+        studentUsers.forEach(temp -> respUserBox.getItems().add(temp.getId() + " | " + temp.getName()));
     }
 }

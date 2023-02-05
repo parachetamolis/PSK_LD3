@@ -1,5 +1,3 @@
-package com.example.egzas;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -18,83 +16,102 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class Pagr extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
+    // Sukuriamas ekrano vaizdas
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button button1 = findViewById(R.id.enterInfoButton);
-        Button button2 = findViewById(R.id.readInfoButton);
-        TextView infoFIle = findViewById(R.id.infoFromFileText);
+
+        Button enterInfoButton = findViewById(R.id.enterInfoButton);
+        Button readInfoButton = findViewById(R.id.readInfoButton);
+        TextView infoFromFileText = findViewById(R.id.infoFromFileText);
+
+        // Sukuriamas pranešimas
         createNotificationChannel();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(Pagr.this, "default").setSmallIcon(R.drawable.ic_launcher_background).setContentTitle("Informacija issiusta").setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        button1.setOnClickListener(new View.OnClickListener() {
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "default")
+        .setSmallIcon(R.drawable.ic_launcher_background)
+        .setContentTitle("Informacija issiusta")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        // Paspaudus enterInfoButton, atidaromas SecondActivity
+        enterInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Pagr.this, SecondActivity.class);
-                startActivity(intent); }});
-        button2.setOnClickListener(new View.OnClickListener() {
+                Intent intent = new Intent(MainActivity.this, SecondActivity.class);
+                startActivity(intent);
+            }
+        });
+        
+        // Paspaudus readInfoButton, iš failo skaitoma informacija ir išsiunčiamas pranešimas
+        readInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try{
-                    infoFIle.setText(file_read());
-                } catch (IOException e){
-                    e.printStackTrace(); }
+                try {
+                    infoFromFileText.setText(readFromFile());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setType("message/rfc822");
                 intent.putExtra(Intent.EXTRA_SUBJECT, "Failo informacija");
-                intent.putExtra(Intent.EXTRA_TEXT, infoFIle.getText().toString());
+                intent.putExtra(Intent.EXTRA_TEXT, infoFromFileText.getText().toString());
                 startActivity(Intent.createChooser(intent, "Siusti"));
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(Pagr.this);
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
                 notificationManager.notify(1, builder.build());
-
-
-
             }
         });
     }
 
+    // Sukuriamas nustatyumų meniu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
+    // Aprašomi nustatymų meniu mygtukų veiksmai
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {switch(item.getItemId()) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
         case R.id.aboutButton:
-            Intent intent = new Intent(Pagr.this, ThirdActivity.class);
+            Intent intent = new Intent(MainActivity.this, ThirdActivity.class);
             startActivity(intent);
-            return(true);
+            return true;
         case R.id.exitButton:
             this.finishAffinity();
-            return(true);
-    } return(super.onOptionsItemSelected(item));
+            return true;
+        }
+    
+        return(super.onOptionsItemSelected(item));
     }
 
-    public String file_read() throws IOException{
+    // Iš failo nuskaitomas tekstas
+    public String readFromFile() throws IOException {
 
         File path = getFilesDir();
         File file = new File(path, "info.txt");
 
-        int x = (int) file.length();
-        byte[] y = new byte[x];
+        int length = (int) file.length();
+        byte[] bytes = new byte[length];
 
         FileInputStream in = new FileInputStream(file);
         try {
-            in.read(y);
-        }catch (IOException e) {
+            in.read(bytes);
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            in.close(); }
+        } finally {
+            in.close(); 
+        }
 
-        String contents = new String(y);
+        String contents = new String(bytes);
 
         return contents;
     }
 
-  // notif
+  // Sukuriamas kanalas pranešimams siųsti
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "default";

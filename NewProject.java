@@ -38,19 +38,21 @@ public class NewProject implements Initializable {
     ProjectHib projectHib = new ProjectHib(entityManagerFactory);
 
     //pagrindinis metodo veikimas
+    //jei nėra pasirinktas projektas,tada sukuria naują
+    //jei projektas buvo pasirinktas, tada jame sukuriamas subprojektas
 
     public void doProject(ActionEvent actionEvent) throws IOException {
         if (parentId != 0) {
             Projects parent = projectHib.getProjectById(parentId);
             Projects projects = new Projects(nameProjectField.getText(), descProjectField.getText(), parent,
-                    (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ") [0])) ,
+                    (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ") [0])),
                     userHib.getUserById(userId));
             parent.getSubProjects().add(projects);
             projectHib.editProject(parent);
         } else if (courseId != 0) {
             Course course = courseHib.getCourseById(courseId);
             Projects projects = new Projects(nameProjectField.getText(), descProjectField.getText(),
-                    (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ")[0])) ,
+                    (Student) userHib.getUserById(Integer.parseInt(respUserBox.getValue().toString().split("\\ | ")[0])),
                     userHib.getUserById(userId), course);
             course.getCourseProjects().add(projects);
             courseHib.editCourse(course);
@@ -81,7 +83,7 @@ public class NewProject implements Initializable {
 
     //sudeda naujo kurso duomenis
 
-    public void newCourseData(boolean modif,int courseId, int parentId, int userId, int projectId) {
+    public void createNewCourseData(boolean modif,int courseId, int parentId, int userId, int projectId) {
         this.courseId = courseId;
         this.parentId = parentId;
         this.userId = userId;
@@ -102,7 +104,7 @@ public class NewProject implements Initializable {
     //užkrauna studentų sąrašą
 
     @Override
-    public void initializeUsers(URL url, ResourceBundle resourceBundle) {
+    public void initializeStudentUsers(URL url, ResourceBundle resourceBundle) {
         List<Student> studentUsers = userHib.getAllStudent();
         studentUsers.forEach(temp -> respUserBox.getItems().add(temp.getId() + " | " + temp.getName()));
     }
